@@ -15,11 +15,49 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+
+      - name: Set time zone
+        uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "Asia/Shanghai"
+          timezoneMacos: "Asia/Shanghai"
+          timezoneWindows: "China Standard Time"
+
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "::set-output name=dir::$(pip cache dir)"
+
+      - name: pip cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Requirements
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -r requirements.txt pyinstaller
+
+      - name: Clear Old Artifact
+        run: |
+          python _clear_github_artifact.py
+
       - name: Build
-        run: echo ${{ github.sha }} > Release.txt
+        run: |
+          echo ${{ github.sha }} > Release.txt
+          python _gen_changelog_for_github_release.py
 
       - name: Test
-        run: cat Release.txt
+        run: |
+          cat Release.txt
+          cat ./releases/_github_action_artifact/changelog-github.txt
 
       - name: Release
         uses: softprops/action-gh-release@v1
@@ -29,44 +67,10 @@ jobs:
             Release.txt
             version.py
             utils/notices.txt
-
-#      - name: Set up Python 3.8
-#        uses: actions/setup-python@v2
-#        with:
-#          python-version: '3.8'
-#
-#      - name: Set time zone
-#        uses: szenius/set-timezone@v1.0
-#        with:
-#          timezoneLinux: "Asia/Shanghai"
-#          timezoneMacos: "Asia/Shanghai"
-#          timezoneWindows: "China Standard Time"
-#
-#      - name: Get pip cache dir
-#        id: pip-cache
-#        run: |
-#          echo "::set-output name=dir::$(pip cache dir)"
-#
-#      - name: pip cache
-#        uses: actions/cache@v2
-#        with:
-#          path: ${{ steps.pip-cache.outputs.dir }}
-#          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-#          restore-keys: |
-#            ${{ runner.os }}-pip-
-#
-#      - name: Install Requirements
-#        run: |
-#          python -m pip install --upgrade pip setuptools wheel
-#          pip install -r requirements.txt pyinstaller
 #
 #      - name: Build
 #        run: |
 #          python _build.py --disable_douban
-#
-#      - name: Clear Old Artifact
-#        run: |
-#          python _clear_github_artifact.py
 #
 #      - name: Package
 #        run: |
