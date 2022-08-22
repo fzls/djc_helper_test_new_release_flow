@@ -24,6 +24,9 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          body: |
+            1. 测试新的release action
+            2. 占位的测试changelog消息
           files: |
             Release.txt
             version.py
