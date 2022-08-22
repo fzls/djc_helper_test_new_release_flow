@@ -267,6 +267,12 @@ def get_update_info_by_download_raw_file() -> UpdateInfo:
     readme_filepath = download_github_raw_content("README.MD")
     changelog_filepath = download_github_raw_content("CHANGELOG.MD")
 
+    update_info = get_update_info_from_local_file(readme_filepath, changelog_filepath)
+
+    return update_info
+
+
+def get_update_info_from_local_file(readme_filepath: str, changelog_filepath: str) -> UpdateInfo:
     readme_txt = open(readme_filepath, encoding="utf-8").read()
     changelog_txt = open(changelog_filepath, encoding="utf-8").read()
 
