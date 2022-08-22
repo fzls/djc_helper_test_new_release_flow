@@ -56,7 +56,7 @@ def release():
 
     # ---------------查看github action
     show_head_line("请在稍后打开的github action中查看打包结果", color("bold_yellow"))
-    webbrowser.open("https://github.com/fzls/djc_helper/actions/workflows/package.yml")
+    webbrowser.open("https://github.com/fzls/djc_helper_test_new_release_flow/actions/workflows/package.yml")
 
     # ---------------结束
     logger.info("+" * 40)
