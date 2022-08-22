@@ -1,40 +1,51 @@
 """将CHANGELOG.MD中的本次更新信息提取出来，供github release流程使用"""
+from __future__ import annotations
 
 import os.path
 
 from log import logger
-from update import get_update_info_from_local_file
 from util import make_sure_dir_exists
 
 
 def gen_changelog():
-    update_info = get_update_info_from_local_file("README.MD", "CHANGELOG.MD")
+    update_message_list: list[str] = []
 
-    logger.info("移除末尾固定的两个更新条目")
-    fixed_items = [
-        "如需购买自动更新DLC或按月付费，请在配置工具的【付费相关】标签页自助购买，具体流程请查阅目录中【付费指引.docx】",
-        "其他改动及上述功能具体用法，详见README.MD和CHANGELOG.MD以及使用教程/使用文档.docx和教程视频",
-    ]
-    message_list = []
-    for message in update_info.update_message.split("\n"):
-        filtered = False
-        for item in fixed_items:
-            if item in message:
-                filtered = True
-                break
+    # 解析changelog文件
+    version_list: list[str] = []
+    version_to_update_message_list: dict[str, list[str]] = {}
+    with open("CHANGELOG.MD", encoding="utf-8") as changelog_file:
 
-        if not filtered:
-            message_list.append(message)
+        version = ""
+        for line in changelog_file:
+            # # v20.0.1 2022.8.22
+            if line.startswith("# v"):
+                version = line.split(" ")[1][1:]
+                version_list.append(version)
+                continue
 
-    update_info.update_message = "\n".join(message_list)
+            if version != "":
+                if version not in version_to_update_message_list:
+                    version_to_update_message_list[version] = []
+                version_to_update_message_list[version].append(line.strip())
 
+    # 获取需要的版本信息
+    latest_version = version_list[0]
+    update_message_list.extend(version_to_update_message_list[latest_version])
+    last_version = "1.0.0"
+    if len(version_list) >= 1:
+        last_version = version_list[1]
+
+    # 附加一个版本变更对比链接
+    update_message_list.append(f"**Full Changelog**: https://github.com/fzls/djc_helper_test_new_release_flow/compare/v{last_version}...v{latest_version}")
+
+    # 导出文本
     github_release_dir = os.path.realpath("./releases/_github_action_artifact")
     make_sure_dir_exists(github_release_dir)
 
     github_change_path = os.path.join(github_release_dir, "changelog-github.txt")
     logger.info(f"将更新信息写入临时文件，供github release使用: {github_change_path}")
     with open(github_change_path, "w", encoding="utf-8") as output_file:
-        output_file.write(update_info.update_message)
+        output_file.write("\n".join(update_message_list))
 
 
 if __name__ == '__main__':
