@@ -14,7 +14,6 @@ def gen_changelog():
     version_list: list[str] = []
     version_to_update_message_list: dict[str, list[str]] = {}
     with open("CHANGELOG.MD", encoding="utf-8") as changelog_file:
-
         version = ""
         for line in changelog_file:
             # # v20.0.1 2022.8.22
@@ -31,12 +30,6 @@ def gen_changelog():
     # 获取需要的版本信息
     latest_version = version_list[0]
     update_message_list.extend(version_to_update_message_list[latest_version])
-    last_version = "1.0.0"
-    if len(version_list) >= 1:
-        last_version = version_list[1]
-
-    # 附加一个版本变更对比链接
-    update_message_list.append(f"**Full Changelog**: https://github.com/fzls/djc_helper_test_new_release_flow/compare/v{last_version}...v{latest_version}")
 
     # 导出文本
     github_release_dir = os.path.realpath("./releases/_github_action_artifact")
